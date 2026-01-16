@@ -18,14 +18,39 @@ client.once("ready", () => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  if (message.attachments.size >= 3) {
+  // Trigger ONLY when there are EXACTLY 4 images/files
+  if (message.attachments.size === 4) {
     try {
+      // Save attachment names BEFORE deleting
+      const fileNames = message.attachments.map(a => `• ${a.name}`).join("\n");
+
+      // 1️⃣ Delete the message (block it)
       await message.delete();
-      await message.member.timeout(10 * 60 * 1000, 
-        "Sent 3+ files in one message");
-      console.log(`Timed out ${message.author.tag}`);
+
+      // 2️⃣ Find the log channel
+      const logChannel = message.guild.channels.cache.find(
+        ch => ch.name === "automod-logs"
+      );
+
+      // 3️⃣ Send detailed log
+      if (logChannel) {
+        await logChannel.send({
+          content:
+`🚫 **AutoMod Action: Blocked Message**
+
+👤 **User:** ${message.author.tag} (${message.author.id})  
+📍 **Channel:** ${message.channel}  
+📎 **Reason:** Image spam in one message  
+
+🖼 **Deleted images:**  
+${fileNames}`
+        });
+      }
+
+      console.log(`Blocked 4-image message from ${message.author.tag}`);
+
     } catch (err) {
-      console.error(err);
+      console.error("Automod error:", err);
     }
   }
 });
