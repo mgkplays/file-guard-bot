@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import express from "express";
+import express from "express";   // <-- FIXED (not require)
 
 const client = new Client({
   intents: [
@@ -12,6 +12,7 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
+// ---------- DISCORD BOT ----------
 client.once("ready", () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
@@ -22,31 +23,28 @@ client.on("messageCreate", async (message) => {
   // Trigger ONLY when there are EXACTLY 4 images/files
   if (message.attachments.size === 4) {
     try {
-      // Save attachment names BEFORE deleting
       const fileNames = message.attachments
         .map(a => `• ${a.name}`)
         .join("\n");
 
-      // 1️⃣ Delete the message (block it)
-      await message.delete();
+      await message.delete(); // Block the message
 
-      // 2️⃣ Find the log channel
       const logChannel = message.guild.channels.cache.find(
         ch => ch.name === "automod-logs"
       );
 
-      // 3️⃣ Send detailed log
       if (logChannel) {
         await logChannel.send({
-          content:
-`🚫 **AutoMod Action: Blocked Message**
+          content: `
+🚫 **AutoMod Action: Blocked Message**
 
 👤 **User:** ${message.author.tag} (${message.author.id})  
 📍 **Channel:** ${message.channel}  
 📎 **Reason:** Exactly 4 images sent  
 
 🖼 **Deleted images:**  
-${fileNames}`
+${fileNames}
+`
         });
       }
 
@@ -60,17 +58,12 @@ ${fileNames}`
 
 client.login(TOKEN);
 
-// ===============================
-//  SIMPLE WEB SERVER FOR REPLIT
-// ===============================
+// ---------- KEEP-ALIVE WEB SERVER (for Replit) ----------
 const app = express();
 
 app.get("/", (req, res) => {
   res.send("Bot is alive!");
 });
 
-// IMPORTANT FOR REPLIT:
-const PORT = 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Web server running on Replit port ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Web server running on port ${PORT}`));
