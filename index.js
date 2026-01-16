@@ -11,8 +11,20 @@ const client = new Client({
 });
 
 const TOKEN = process.env.TOKEN;
+const app = express();
 
-// ---------- DISCORD BOT ----------
+// ===== SIMPLE REPLIT KEEP-ALIVE (MUST EXIST FIRST) =====
+app.get("/", (req, res) => {
+  res.send("Bot is alive!");
+});
+
+// Start web server FIRST (important for Replit)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Web server running on port ${PORT}`);
+});
+
+// ===== DISCORD BOT BELOW =====
 client.once("ready", () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
@@ -20,14 +32,14 @@ client.once("ready", () => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  // Trigger ONLY when there are EXACTLY 4 images/files
+  // Trigger ONLY when there are EXACTLY 4 attachments
   if (message.attachments.size === 4) {
     try {
       const fileNames = message.attachments
         .map(a => `• ${a.name}`)
         .join("\n");
 
-      await message.delete(); // Block the message
+      await message.delete(); // block the message
 
       const logChannel = message.guild.channels.cache.find(
         ch => ch.name === "automod-logs"
@@ -57,17 +69,3 @@ ${fileNames}
 });
 
 client.login(TOKEN);
-
-// ---------- FIXED REPLIT KEEP-ALIVE SERVER ----------
-const app = express();
-
-// Replit needs THIS route
-app.get("/", (req, res) => {
-  res.send("Bot is alive!");
-});
-
-// IMPORTANT PART 👇 (this is what actually fixes your error)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Web server running on port ${PORT}`);
-});
