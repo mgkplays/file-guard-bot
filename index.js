@@ -1,4 +1,5 @@
 import { Client, GatewayIntentBits } from "discord.js";
+import express from "express";
 
 const client = new Client({
   intents: [
@@ -22,7 +23,9 @@ client.on("messageCreate", async (message) => {
   if (message.attachments.size === 4) {
     try {
       // Save attachment names BEFORE deleting
-      const fileNames = message.attachments.map(a => `• ${a.name}`).join("\n");
+      const fileNames = message.attachments
+        .map(a => `• ${a.name}`)
+        .join("\n");
 
       // 1️⃣ Delete the message (block it)
       await message.delete();
@@ -40,7 +43,7 @@ client.on("messageCreate", async (message) => {
 
 👤 **User:** ${message.author.tag} (${message.author.id})  
 📍 **Channel:** ${message.channel}  
-📎 **Reason:** Image spam in one message  
+📎 **Reason:** Exactly 4 images sent  
 
 🖼 **Deleted images:**  
 ${fileNames}`
@@ -57,13 +60,17 @@ ${fileNames}`
 
 client.login(TOKEN);
 
-
-const express = require("express");
+// ===============================
+//  SIMPLE WEB SERVER FOR REPLIT
+// ===============================
 const app = express();
 
 app.get("/", (req, res) => {
   res.send("Bot is alive!");
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Web server running on port ${PORT}`));
+// IMPORTANT FOR REPLIT:
+const PORT = 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Web server running on Replit port ${PORT}`);
+});
