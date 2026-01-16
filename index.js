@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import express from "express";   // <-- FIXED (not require)
+import express from "express";
 
 const client = new Client({
   intents: [
@@ -58,12 +58,16 @@ ${fileNames}
 
 client.login(TOKEN);
 
-// ---------- KEEP-ALIVE WEB SERVER (for Replit) ----------
+// ---------- FIXED REPLIT KEEP-ALIVE SERVER ----------
 const app = express();
 
+// Replit needs THIS route
 app.get("/", (req, res) => {
   res.send("Bot is alive!");
 });
 
+// IMPORTANT PART 👇 (this is what actually fixes your error)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Web server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Web server running on port ${PORT}`);
+});
