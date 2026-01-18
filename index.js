@@ -1,5 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import express from "express";
+import dotenv from "dotenv";
+
+dotenv.config(); // load your TOKEN from .env
 
 const client = new Client({
   intents: [
@@ -11,22 +13,9 @@ const client = new Client({
 });
 
 const TOKEN = process.env.TOKEN;
-const app = express();
 
-// ===== SIMPLE REPLIT KEEP-ALIVE (MUST EXIST FIRST) =====
-app.get("/", (req, res) => {
-  res.send("Bot is alive!");
-});
-
-// Start web server FIRST (important for Replit)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Web server running on port ${PORT}`);
-});
-
-// ===== DISCORD BOT BELOW =====
 client.once("ready", () => {
-  console.log(`Logged in as ${client.user.tag}`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
 client.on("messageCreate", async (message) => {
@@ -39,12 +28,15 @@ client.on("messageCreate", async (message) => {
         .map(a => `• ${a.name}`)
         .join("\n");
 
-      await message.delete(); // block the message
+      // 1️⃣ Delete the message
+      await message.delete();
 
+      // 2️⃣ Find log channel
       const logChannel = message.guild.channels.cache.find(
         ch => ch.name === "automod-logs"
       );
 
+      // 3️⃣ Send log
       if (logChannel) {
         await logChannel.send({
           content: `
